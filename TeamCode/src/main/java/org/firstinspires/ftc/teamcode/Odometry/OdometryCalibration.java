@@ -30,10 +30,10 @@ public class OdometryCalibration extends LinearOpMode {
     BNO055IMU imu;
 
     //Hardware Map Names for drive motors and odometry wheels. THIS WILL CHANGE ON EACH ROBOT, YOU NEED TO UPDATE THESE VALUES ACCORDINGLY
-    String rfName = "FRWheelM", rbName = "BRWheelandRightOdometry", lfName = "FLWheelandCenterOdometry", lbName = "BLWheelandLeftOdometry";
-    String verticalLeftEncoderName = lbName, verticalRightEncoderName = rbName, horizontalEncoderName = lfName;
+    String rfName = "FRWheelandLeftOdometry", rbName = "BRWheelandCenterOdometry", lfName = "FLWheelM", lbName = "BLWheelM", rightOdometry="CollectorMandRightOdometry";
+    String verticalLeftEncoderName = rfName, verticalRightEncoderName = rightOdometry, horizontalEncoderName = rbName;
 
-    final double PIVOT_SPEED = 0.1;
+    final double PIVOT_SPEED = 0.6;
 
     //The amount of encoder ticks for each inch the robot moves. THIS WILL CHANGE FOR EACH ROBOT AND NEEDS TO BE UPDATED HERE
     private static final MotorConfigurationType MOTOR_CONFIG =
@@ -77,8 +77,8 @@ public class OdometryCalibration extends LinearOpMode {
         //Begin calibration (if robot is unable to pivot at these speeds, please adjust the constant at the top of the code
         while(getZAngle() < 90 && opModeIsActive()){
             right_front.setPower(-PIVOT_SPEED);
-            right_back.setPower(-PIVOT_SPEED);
-            left_front.setPower(PIVOT_SPEED);
+            right_back.setPower(PIVOT_SPEED);
+            left_front.setPower(-PIVOT_SPEED);
             left_back.setPower(PIVOT_SPEED);
             if(getZAngle() < 60) {
                 setPowerAll(-PIVOT_SPEED, -PIVOT_SPEED, PIVOT_SPEED, PIVOT_SPEED);

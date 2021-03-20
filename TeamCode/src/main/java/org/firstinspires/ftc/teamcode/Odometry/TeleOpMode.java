@@ -1,7 +1,6 @@
 package org.firstinspires.ftc.teamcode.Odometry;
 
 
-import android.util.Log;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
@@ -43,8 +42,8 @@ public class TeleOpMode extends OpMode {
     public int collectorVal = 0;
     public final int TRIGGERFORWARD =  1460;
     public final int TRIGGERBACK = 1140;
-    public final int HIGHSHOT =1150;
-    public final int LOWSHOT = 950;
+    public final int HIGHSHOT = 830;
+    public final int LOWSHOT = 640;
     public final int HIGHPOS = -1160;
     public int shootHeight = HIGHSHOT;
     public final int ELBOWUP = 1000;
@@ -100,6 +99,7 @@ public class TeleOpMode extends OpMode {
         shooter = (DcMotorEx) hardwareMap.dcMotor.get("ShooterMandE");
         extraShooter = (DcMotorEx) hardwareMap.dcMotor.get("ExtraShooterM");
         shooterHeights = (Servo) hardwareMap.servo.get("ShooterHeightS");
+        shooterHeights.setPosition((shootHeight - 100.0) / 2420.0);
         lift = (DcMotorEx) hardwareMap.dcMotor.get("LiftM");
         lift.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         lift.setVelocity(0);
@@ -107,9 +107,14 @@ public class TeleOpMode extends OpMode {
         lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         shooter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         shooter.setDirection(DcMotor.Direction.REVERSE);
-        PIDFCoefficients pid = new PIDFCoefficients(18.0, 3.0, 2.0, 0.0, MotorControlAlgorithm.PIDF);
+
+        extraShooter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        extraShooter.setDirection(DcMotor.Direction.REVERSE);
+
+        PIDFCoefficients pid = new PIDFCoefficients(1000.0, 0.96, 445, 0.0, MotorControlAlgorithm.PIDF);
 
         shooter.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pid);
+        extraShooter.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pid);
         trigger = hardwareMap.servo.get("TriggerS");
         elbow = hardwareMap.servo.get("WobbleElbowS");
         hand = hardwareMap.servo.get("WobbleHandS");
@@ -195,10 +200,7 @@ public class TeleOpMode extends OpMode {
         }
         if(gamepad1.right_bumper)
         {
-            if(lift.getCurrentPosition() <= -1250)
-            {
-                toggleTriggerThrice();
-            }
+            toggleTriggerThrice();
         }
 
         if(gamepad2.right_trigger == 1.0 || gamepad2.y)
@@ -214,7 +216,7 @@ public class TeleOpMode extends OpMode {
         {
             collector.setPower(0.00);
         }
-        if(gamepad1.left_trigger == 1.0)
+        if(gamepad1.left_trigger >= 0.1)
         {
             //collectorVal = 1;
             collector.setPower(1.00);
@@ -305,9 +307,9 @@ public class TeleOpMode extends OpMode {
         telemetry.addData("Trigger position", trigger.getPosition());
         telemetry.addData("Trigger bool", triggered);
         telemetry.addData("Shooter velocity in ticks per seconds", shooter.getVelocity());
+        telemetry.addData("Velocity of extra shooter", extraShooter.getVelocity());
         telemetry.addData("PID Coef", shooter.getPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER));
         telemetry.addData("PID Coef - P", shooter.getPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER).p);
-        telemetry.addData("Velocity of extra shooter", extraShooter.getVelocity());
         telemetry.update();
     }
 
@@ -370,37 +372,36 @@ public class TeleOpMode extends OpMode {
     {
         triggered = true;
         trigger.setPosition((TRIGGERFORWARD-100.0)/ 2420.0);
-        Log.d("TRIGGER TRUE", "TRUE");
         try {
-            Thread.sleep(570);
+            Thread.sleep(300);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
 
         trigger.setPosition((TRIGGERBACK-100.0)/ 2420.0);
         try {
-            Thread.sleep(450);
+            Thread.sleep(300);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
 
         trigger.setPosition((TRIGGERFORWARD-100.0)/ 2420.0);
         try {
-            Thread.sleep(570);
+            Thread.sleep(300);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
 
         trigger.setPosition((TRIGGERBACK-100.0)/ 2420.0);
         try {
-            Thread.sleep(450);
+            Thread.sleep(300);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
 
         trigger.setPosition((TRIGGERFORWARD-100.0)/ 2420.0);
         try {
-            Thread.sleep(450);
+            Thread.sleep(300);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -499,24 +500,49 @@ public class TeleOpMode extends OpMode {
 
         public void run()
         {
-            try {
-                double r = Math.hypot(gamepad1.left_stick_x, -gamepad1.left_stick_y);
-                double robotAngle = Math.atan2(-gamepad1.left_stick_y, gamepad1.left_stick_x) - Math.PI / 4;
-                double rightX = gamepad1.right_stick_x;
-                final double v1 = r * Math.cos(robotAngle) + rightX;
-                final double v2 = r * Math.sin(robotAngle) - rightX;
-                final double v3 = r * Math.sin(robotAngle) + rightX;
-                final double v4 = r * Math.cos(robotAngle) - rightX;
-
-                fl.setPower(1.5*v1);
-                fr.setPower(1.5*v2);
-                bl.setPower(1.5*v3);
-                br.setPower(-1.5*v4);
-            }
-            catch (Exception e)
+            if(gamepad1.left_stick_x != 0.0 || gamepad1.right_stick_x != 0.0 || gamepad1.left_stick_y != 0.0 || gamepad1.right_stick_y != 0.0)
             {
-                telemetry.addData("Exception", e);
-                telemetry.update();
+                try {
+                    double r = Math.hypot(gamepad1.left_stick_x, -gamepad1.left_stick_y);
+                    double robotAngle = Math.atan2(-gamepad1.left_stick_y, gamepad1.left_stick_x) - Math.PI / 4;
+                    double rightX = gamepad1.right_stick_x;
+                    final double v1 = r * Math.cos(robotAngle) + rightX;
+                    final double v2 = r * Math.sin(robotAngle) - rightX;
+                    final double v3 = r * Math.sin(robotAngle) + rightX;
+                    final double v4 = r * Math.cos(robotAngle) - rightX;
+
+                    fl.setPower(4.0*v1);
+                    fr.setPower(4.0*v2);
+                    bl.setPower(4.0*v3);
+                    br.setPower(-4.0*v4);
+                }
+                catch (Exception e)
+                {
+                    telemetry.addData("Exception", e);
+                    telemetry.update();
+                }
+            }
+            else if (gamepad2.left_stick_x != 0.0 || gamepad2.right_stick_x != 0.0 || gamepad2.left_stick_y != 0.0 || gamepad2.right_stick_y != 0.0)
+            {
+                try {
+                    double r = Math.hypot(gamepad2.left_stick_x, -gamepad2.left_stick_y);
+                    double robotAngle = Math.atan2(-gamepad2.left_stick_y, gamepad2.left_stick_x) - Math.PI / 4;
+                    double rightX = gamepad2.right_stick_x;
+                    final double v1 = r * Math.cos(robotAngle) + rightX;
+                    final double v2 = r * Math.sin(robotAngle) - rightX;
+                    final double v3 = r * Math.sin(robotAngle) + rightX;
+                    final double v4 = r * Math.cos(robotAngle) - rightX;
+
+                    fl.setPower(0.5*v1);
+                    fr.setPower(0.5*v2);
+                    bl.setPower(0.5*v3);
+                    br.setPower(-0.5*v4);
+                }
+                catch (Exception e)
+                {
+                    telemetry.addData("Exception", e);
+                    telemetry.update();
+                }
             }
         }
 

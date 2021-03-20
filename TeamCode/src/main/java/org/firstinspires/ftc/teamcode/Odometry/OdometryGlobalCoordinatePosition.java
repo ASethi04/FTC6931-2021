@@ -32,8 +32,8 @@ public class OdometryGlobalCoordinatePosition implements Runnable{
     private File wheelBaseSeparationFile = AppUtil.getInstance().getSettingsFile("wheelBaseSeparation.txt");
     private File horizontalTickOffsetFile = AppUtil.getInstance().getSettingsFile("horizontalTickOffset.txt");
 
-    private double verticalLeftEncoderPositionMultiplier = 0.5;
-    private double verticalRightEncoderPositionMultiplier = 0.5;
+    private double verticalLeftEncoderPositionMultiplier = -0.5;
+    private double verticalRightEncoderPositionMultiplier = -0.5;
     private double normalEncoderPositionMultiplier = -0.5;
 
     /**

@@ -7,6 +7,8 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.MotorControlAlgorithm;
+import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigurationType;
 import com.qualcomm.hardware.bosch.BNO055IMU;
@@ -68,6 +70,8 @@ public class MyOdometryOpmode extends LinearOpMode {
     public DcMotor fr;
     public DcMotor collector;
     public DcMotorEx shooter;
+    public DcMotorEx extraShooter;
+
     public boolean shooterToggle = false;
     public boolean triggered = false;
     //public int topHeight = 0;
@@ -77,11 +81,12 @@ public class MyOdometryOpmode extends LinearOpMode {
     public int MINPOSITION = 100;
     public int MAXPOSITION = 2520;
     public int collectorVal = 0;
-    public int shootHeight = 1250;
     public final int TRIGGERFORWARD =  1460;
     public final int TRIGGERBACK = 1140;
-    public final int HIGHSHOT =1200;
-    public final int LOWSHOT = 1000;
+    public final int HIGHSHOT = 915;
+    public final int LOWSHOT = 630;
+    public int shootHeight = HIGHSHOT;
+
     public final int ELBOWUP = 1200;
     public final int ELBOWDOWN = 2200;
     boolean firstTime = true;
@@ -137,6 +142,7 @@ public class MyOdometryOpmode extends LinearOpMode {
         initDriveHardwareMap(rfName, rbName, lfName, lbName, verticalLeftEncoderName, verticalRightEncoderName, horizontalEncoderName);
         //telemetry.addData("Status", "Init Complete");
         //telemetry.update();
+        shooterHeights.setPosition((shootHeight-100.0)/ 2420.0);
         initVuforia();
         initTfod();
 
@@ -239,7 +245,8 @@ public class MyOdometryOpmode extends LinearOpMode {
         Thread.sleep(50);
         elbow.setPosition((1000.0 - 100.0) / 2420.0);
         shooterHeights.setPosition((HIGHSHOT - 100.0) / 2420.0);
-        shooter.setVelocity(1800);
+        shooter.setVelocity(1300);
+        extraShooter.setVelocity(1300);
 
 
 
@@ -254,8 +261,10 @@ public class MyOdometryOpmode extends LinearOpMode {
 
         
         ArrayList<CurvePoint> allPoints = new ArrayList<>();
-        allPoints.add(new CurvePoint(   -30,20,0.75,1.0,2, Math.toRadians(0), 0.5));
-        followCurve(COUNTS_PER_INCH, telemetry, allPoints, Math.toRadians(0), 1.0, st);
+        allPoints.add(new CurvePoint(   -30,20,0.80,1.0,2, Math.toRadians(0), 0.5));
+        followCurve(COUNTS_PER_INCH, telemetry, allPoints, Math.toRadians(0), 2.5, st);
+
+
 
         elbow.setPosition((ELBOWDOWN - 100.0) / 2420.0);
         liftingUp=true;
@@ -264,8 +273,8 @@ public class MyOdometryOpmode extends LinearOpMode {
         st.start();
 
         ArrayList<CurvePoint> allPoints2 = new ArrayList<>();
-        allPoints2.add(new CurvePoint(   -19,65,0.75,1.0,2, Math.toRadians(0), 0.5));
-        followCurve(COUNTS_PER_INCH, telemetry, allPoints2, Math.toRadians(0), 0.5, st);
+        allPoints2.add(new CurvePoint(   -13,65,0.80,1.0,2, Math.toRadians(0), 0.5));
+        followCurve(COUNTS_PER_INCH, telemetry, allPoints2, Math.toRadians(0), 2.5, st);
 
         toggleTriggerThrice();
         Thread.sleep(200);
@@ -274,25 +283,25 @@ public class MyOdometryOpmode extends LinearOpMode {
 
 
         ArrayList<CurvePoint> allPoints3 = new ArrayList<>();
-        allPoints3.add(new CurvePoint(wobbleGoalX,wobbleGoalY,0.7,1.0,2, Math.toRadians(0), 0.5));
+        //allPoints3.add(new CurvePoint(wobbleGoalX,wobbleGoalY,0.80,1.0,2, Math.toRadians(90), 0.5));
+        //rotate(90, 0.6);
 
-        followCurve(COUNTS_PER_INCH, telemetry, allPoints3, Math.toRadians(Math.toRadians(0)), 2, st);
-        rotate(98, 0.5);
-        Thread.sleep(200);
-        hand.setPosition((OPENPOS - 100.0) / 2420.0);
-        Thread.sleep(400);
-        left_back.setPower(0.6);
-        left_front.setPower(0.6);
-        right_back.setPower(0.6);
-        right_front.setPower(0.6);
-        Thread.sleep(500);
-        rotate(-98, 0.5);
+        //followCurve(COUNTS_PER_INCH, telemetry, allPoints3, Math.toRadians(Math.toRadians(0)), 2.5, st);
 
+        //hand.setPosition((OPENPOS - 100.0) / 2420.0);
+        //Thread.sleep(400);
 
+        //Thread.sleep(500);
+        /*
+        left_back.setPower(0.0);
+        left_front.setPower(0.0);
+        right_back.setPower(0.0);
+        right_front.setPower(0.0);
 
+*/
         ArrayList<CurvePoint> allPoints4 = new ArrayList<>();
-        allPoints4.add(new CurvePoint(   -10, 82,0.7,1.0,2, 0, 0.5));
-        followCurve(COUNTS_PER_INCH, telemetry, allPoints4, 0f, 1, st);
+        allPoints4.add(new CurvePoint(   -10, 88,0.7,1.0,2, 0, 0.5));
+        followCurve(COUNTS_PER_INCH, telemetry, allPoints4, 0f, 2.5, st);
         Thread.sleep(100);
 
 
@@ -440,6 +449,8 @@ public class MyOdometryOpmode extends LinearOpMode {
             tele.addData("Size of stack", size);
             tele.addData("Wobble Goal X", wobbleGoalX);
             tele.addData("Wobble Goal Y", wobbleGoalY);
+            telemetry.addData("Shooter velocity in ticks per seconds", shooter.getVelocity());
+            telemetry.addData("Velocity of extra shooter", extraShooter.getVelocity());
 
 
 
@@ -464,7 +475,7 @@ public class MyOdometryOpmode extends LinearOpMode {
             left_back.setPower(vlb * robotPower);
             right_front.setPower(vrf * robotPower);
             left_front.setPower(vlf * robotPower);
-            right_back.setPower(vrb * robotPower);
+            right_back.setPower(-vrb * robotPower);
 
             telemetry.addData("X Position", globalPositionUpdate.returnXCoordinate() / COUNTS_PER_INCH);
             telemetry.addData("Y Position", globalPositionUpdate.returnYCoordinate() / COUNTS_PER_INCH);
@@ -512,14 +523,14 @@ public class MyOdometryOpmode extends LinearOpMode {
     public void toggleTriggerThrice()
     {
         try {
-            Thread.sleep(450);
+            Thread.sleep(10000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
         triggered = true;
         trigger.setPosition((TRIGGERFORWARD-100.0)/ 2420.0);
         try {
-            Thread.sleep(700);
+            Thread.sleep(500);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -527,14 +538,14 @@ public class MyOdometryOpmode extends LinearOpMode {
         triggered = false;
         trigger.setPosition((TRIGGERBACK-100.0)/ 2420.0);
         try {
-            Thread.sleep(1200);
+            Thread.sleep(500);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
         triggered = true;
         trigger.setPosition((TRIGGERFORWARD-100.0)/ 2420.0);
         try {
-            Thread.sleep(700);
+            Thread.sleep(500);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -542,14 +553,14 @@ public class MyOdometryOpmode extends LinearOpMode {
         triggered = false;
         trigger.setPosition((TRIGGERBACK-100.0)/ 2420.0);
         try {
-            Thread.sleep(1200);
+            Thread.sleep(500);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
         triggered = true;
         trigger.setPosition((TRIGGERFORWARD-100.0)/ 2420.0);
         try {
-            Thread.sleep(700);
+            Thread.sleep(500);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -573,7 +584,7 @@ public class MyOdometryOpmode extends LinearOpMode {
             distanceToYTarget = allPoints.get(allPoints.size() - 1).y - globalPositionUpdate.returnYCoordinate()/ COUNTS_PER_INCH;
             distance = Math.hypot(distanceToXTarget, distanceToYTarget);
             for (int i = 0; i < allPoints.size() - 1; i++) {
-                //ComputerDebugging.sendLine(new FloatPoint(allPoints.get(i).x, allPoints.get(i).y), new FloatPoint(allPoints.get(i+1).x,allPoints.get(i+1).y));
+                //com.company.ComputerDebugging.sendLine(new com.company.FloatPoint(allPoints.get(i).x, allPoints.get(i).y), new com.company.FloatPoint(allPoints.get(i+1).x,allPoints.get(i+1).y));
             }
 
             CurvePoint followMe = getFollowPointPath(allPoints, new Point(globalPositionUpdate.returnXCoordinate(), globalPositionUpdate.returnYCoordinate()), allPoints.get(0).followDistance, globalPositionUpdate);
@@ -593,12 +604,23 @@ public class MyOdometryOpmode extends LinearOpMode {
         left_front = hardwareMap.dcMotor.get(lfName);
         left_back = hardwareMap.dcMotor.get(lbName);
 
-        collector = (DcMotor) hardwareMap.dcMotor.get("CollectorM");
+        collector = (DcMotor) hardwareMap.dcMotor.get("CollectorMandRightOdometry");
         shooter = (DcMotorEx) hardwareMap.dcMotor.get("ShooterMandE");
+        extraShooter = (DcMotorEx) hardwareMap.dcMotor.get("ExtraShooterM");
+
         shooterHeights = (Servo) hardwareMap.servo.get("ShooterHeightS");
         lift = (DcMotor) hardwareMap.dcMotor.get("LiftM");
         shooter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         shooter.setDirection(DcMotor.Direction.REVERSE);
+
+        extraShooter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        extraShooter.setDirection(DcMotor.Direction.REVERSE);
+
+        PIDFCoefficients pid = new PIDFCoefficients(2000.0, 0.96, 445, 0.0, MotorControlAlgorithm.PIDF);
+
+        shooter.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pid);
+        extraShooter.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pid);
+
         trigger = hardwareMap.servo.get("TriggerS");
         elbow = hardwareMap.servo.get("WobbleElbowS");
         hand = hardwareMap.servo.get("WobbleHandS");
