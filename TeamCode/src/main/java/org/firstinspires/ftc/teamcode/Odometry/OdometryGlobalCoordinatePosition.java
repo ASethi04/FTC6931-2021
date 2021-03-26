@@ -65,7 +65,7 @@ public class OdometryGlobalCoordinatePosition implements Runnable{
         double rightChange = verticalRightEncoderWheelPosition - previousVerticalRightEncoderWheelPosition;
 
         //Calculate Angle
-        changeInRobotOrientation = 4.5 * (leftChange - rightChange) / (robotEncoderWheelDistance);
+        changeInRobotOrientation = 2 * (leftChange - rightChange) / (robotEncoderWheelDistance);
         robotOrientationRadians = ((robotOrientationRadians + changeInRobotOrientation));
 
         //Get the components of the motion

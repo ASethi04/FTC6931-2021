@@ -30,7 +30,7 @@ public class TeleOpMode extends OpMode {
     public DcMotor collector;
     public DcMotorEx shooter;
     public DcMotorEx lift;
-    public DcMotorEx extraShooter;
+    public DcMotor advancingM;
     public boolean shooterToggle = false;
     public boolean triggered = false;
     //public int topHeight = 0;
@@ -42,21 +42,25 @@ public class TeleOpMode extends OpMode {
     public int collectorVal = 0;
     public final int TRIGGERFORWARD =  1460;
     public final int TRIGGERBACK = 1140;
-    public final int HIGHSHOT = 830;
-    public final int LOWSHOT = 640;
-    public final int HIGHPOS = -1160;
+    public final int HIGHSHOT = 1120;
+    public final int LOWSHOT = 1650;
+    public final int HIGHPOS = -1155;
     public int shootHeight = HIGHSHOT;
-    public final int ELBOWUP = 1000;
-    public final int ELBOWDOWN = 2200;
+    public final int ELBOWUP = 900;
+    public final int ELBOWDOWN = 2050;
     boolean firstTime = true;
-    public int elbowH = 1600;
+    public int elbowH = 1300;
     public int CLOSEDPOS = 550;
     public int OPENPOS = 1575;
     public int handH = CLOSEDPOS;
     public Servo trigger;
     public Servo shooterHeights;
+    public Servo shooterHeights2;
     public Servo elbow;
     public Servo hand;
+    public double robotPower1 = 4.0;
+    public double robotPower2 = 0.5;
+    public StickyButton boostPower;
 
 
     /*
@@ -97,9 +101,11 @@ public class TeleOpMode extends OpMode {
         //br.setDirection(DcMotorSimple.Direction.REVERSE);
         collector = (DcMotor) hardwareMap.dcMotor.get("CollectorMandRightOdometry");
         shooter = (DcMotorEx) hardwareMap.dcMotor.get("ShooterMandE");
-        extraShooter = (DcMotorEx) hardwareMap.dcMotor.get("ExtraShooterM");
+        advancingM = (DcMotorEx) hardwareMap.dcMotor.get("AdvancingM");
         shooterHeights = (Servo) hardwareMap.servo.get("ShooterHeightS");
+        shooterHeights2 = (Servo) hardwareMap.servo.get("ShooterHeightS2");
         shooterHeights.setPosition((shootHeight - 100.0) / 2420.0);
+        shooterHeights2.setPosition((shootHeight - 100.0) / 2420.0);
         lift = (DcMotorEx) hardwareMap.dcMotor.get("LiftM");
         lift.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         lift.setVelocity(0);
@@ -108,13 +114,16 @@ public class TeleOpMode extends OpMode {
         shooter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         shooter.setDirection(DcMotor.Direction.REVERSE);
 
-        extraShooter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        extraShooter.setDirection(DcMotor.Direction.REVERSE);
+        //Initialiign the sticky button to boost power
+        boostPower = new StickyButton();
+
+        //extraShooter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        //extraShooter.setDirection(DcMotor.Direction.REVERSE);
 
         PIDFCoefficients pid = new PIDFCoefficients(1000.0, 0.96, 445, 0.0, MotorControlAlgorithm.PIDF);
 
         shooter.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pid);
-        extraShooter.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pid);
+        //extraShooter.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pid);
         trigger = hardwareMap.servo.get("TriggerS");
         elbow = hardwareMap.servo.get("WobbleElbowS");
         hand = hardwareMap.servo.get("WobbleHandS");
@@ -134,7 +143,7 @@ public class TeleOpMode extends OpMode {
             List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
             if (updatedRecognitions != null) {
                 telemetry.addData("# Object Detected", updatedRecognitions.size());
-                // step through the list of recognitions and display boundary info.
+                // step through the list of recognitions and displays boundary info.
                 int i = 0;
                 for (Recognition recognition : updatedRecognitions) {
                     telemetry.addData(String.format("label (%d)", i), recognition.getLabel());
@@ -175,8 +184,9 @@ public class TeleOpMode extends OpMode {
             firstTime = false;
         }
 
-        telemetry.addData("Encoder value for lift", lift.getCurrentPosition());
-        telemetry.addData("Target encdoer value for lift", lift.getTargetPosition());
+
+        //telemetry.addData("Encoder value for lift", lift.getCurrentPosition());
+        //telemetry.addData("Target encdoer value for lift", lift.getTargetPosition());
 
 
         Thread mt = (Thread) new MovementThread();
@@ -191,7 +201,7 @@ public class TeleOpMode extends OpMode {
         //check if left bumper is pressed
         if(gamepad1.left_bumper)
         {
-            toggleShooter();
+            toggleTrigger();
         }
 
         if(gamepad2.x)
@@ -226,6 +236,15 @@ public class TeleOpMode extends OpMode {
             collector.setPower(-1.00);
         }
 
+        if(gamepad1.right_stick_button)
+        {
+            robotPower1 = 4.0;
+        }
+        if(gamepad1.left_stick_button)
+        {
+            robotPower1 = 0.3;
+        }
+
 
         if(gamepad1.x)
         {
@@ -238,12 +257,9 @@ public class TeleOpMode extends OpMode {
 
         if(gamepad1.y)
         {
-            if(elbowH > 1599)
-            {
-                liftingUp = true;
-                falling = false;
+            liftingUp = true;
+            falling = false;
                 //topHeight = lift.getCurrentPosition() - 100;
-            }
 
         }
 
@@ -306,15 +322,17 @@ public class TeleOpMode extends OpMode {
         telemetry.addData("Hand H", handH);
         telemetry.addData("Trigger position", trigger.getPosition());
         telemetry.addData("Trigger bool", triggered);
+        telemetry.addData("Shooter height", shooterHeights.getPosition());
         telemetry.addData("Shooter velocity in ticks per seconds", shooter.getVelocity());
-        telemetry.addData("Velocity of extra shooter", extraShooter.getVelocity());
         telemetry.addData("PID Coef", shooter.getPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER));
         telemetry.addData("PID Coef - P", shooter.getPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER).p);
+        telemetry.addData("Robot Power", robotPower1);
+
         telemetry.update();
     }
 
     private void dropWobble() {
-        elbowH = 1000;
+        elbowH = 1300;
         elbow.setPosition((elbowH - 100.0) / 2420.0);
         try {
             Thread.sleep(1000);
@@ -394,7 +412,7 @@ public class TeleOpMode extends OpMode {
 
         trigger.setPosition((TRIGGERBACK-100.0)/ 2420.0);
         try {
-            Thread.sleep(300);
+            Thread.sleep(600);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -440,29 +458,31 @@ public class TeleOpMode extends OpMode {
         public void run() {
             if(shooterToggle == true)
             {
-                shooter.setVelocity(1300);
-                extraShooter.setVelocity(1300);
+                shooter.setVelocity(1500);
+                advancingM.setPower(-0.80);
             }
             else if(shooterToggle == false)
             {
-                shooter.setVelocity(1300);
-                extraShooter.setVelocity(1300);
+                shooter.setVelocity(1500);
+                advancingM.setPower(-80);
             }
 
             if(liftingUp)
             {
                 lift.setTargetPosition(HIGHPOS);
-                lift.setVelocity(800);
+                lift.setVelocity(2000);
             }
             if(falling)
             {
                 lift.setTargetPosition(0);
-                lift.setVelocity(800);
+                lift.setVelocity(2000);
             }
 
             elbow.setPosition((elbowH -100.0) / 2420.0);
             hand.setPosition((handH -100.0) / 2420.0);
             shooterHeights.setPosition((shootHeight-100.0)/ 2420.0);
+            shooterHeights2.setPosition((shootHeight-100.0)/ 2420.0);
+
 
         }
     }
@@ -511,10 +531,10 @@ public class TeleOpMode extends OpMode {
                     final double v3 = r * Math.sin(robotAngle) + rightX;
                     final double v4 = r * Math.cos(robotAngle) - rightX;
 
-                    fl.setPower(4.0*v1);
-                    fr.setPower(4.0*v2);
-                    bl.setPower(4.0*v3);
-                    br.setPower(-4.0*v4);
+                    fl.setPower(robotPower1*v1);
+                    fr.setPower(robotPower1*v2);
+                    bl.setPower(robotPower1*v3);
+                    br.setPower(-robotPower1*v4);
                 }
                 catch (Exception e)
                 {
@@ -522,6 +542,7 @@ public class TeleOpMode extends OpMode {
                     telemetry.update();
                 }
             }
+
             else if (gamepad2.left_stick_x != 0.0 || gamepad2.right_stick_x != 0.0 || gamepad2.left_stick_y != 0.0 || gamepad2.right_stick_y != 0.0)
             {
                 try {
@@ -533,10 +554,10 @@ public class TeleOpMode extends OpMode {
                     final double v3 = r * Math.sin(robotAngle) + rightX;
                     final double v4 = r * Math.cos(robotAngle) - rightX;
 
-                    fl.setPower(0.5*v1);
-                    fr.setPower(0.5*v2);
-                    bl.setPower(0.5*v3);
-                    br.setPower(-0.5*v4);
+                    fl.setPower(robotPower2*v1);
+                    fr.setPower(robotPower2*v2);
+                    bl.setPower(robotPower2*v3);
+                    br.setPower(-robotPower2*v4);
                 }
                 catch (Exception e)
                 {
@@ -544,8 +565,15 @@ public class TeleOpMode extends OpMode {
                     telemetry.update();
                 }
             }
-        }
+            else
+            {
+                fl.setPower(0);
+                fr.setPower(0);
+                bl.setPower(0);
+                br.setPower(0);
+            }
 
+        }
 
     }
 }
