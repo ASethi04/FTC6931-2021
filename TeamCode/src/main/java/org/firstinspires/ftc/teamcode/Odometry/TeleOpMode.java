@@ -58,7 +58,7 @@ public class TeleOpMode extends OpMode {
     public Servo shooterHeights2;
     public Servo elbow;
     public Servo hand;
-    public double robotPower1 = 4.0;
+    public double robotPower1 = 2.0;
     public double robotPower2 = 0.5;
     public StickyButton boostPower;
 
@@ -199,29 +199,18 @@ public class TeleOpMode extends OpMode {
         //ct.start();
 
         //check if left bumper is pressed
-        if(gamepad1.left_bumper)
+        if(gamepad1.left_bumper || gamepad2.left_bumper)
         {
             toggleTrigger();
         }
 
-        if(gamepad2.x)
-        {
-            dropWobble();
-        }
-        if(gamepad1.right_bumper)
+        if(gamepad1.right_bumper || gamepad2.right_bumper)
         {
             toggleTriggerThrice();
         }
 
-        if(gamepad2.right_trigger == 1.0 || gamepad2.y)
-        {
-            toggleTriggerThrice();
-        }
 
-        if(gamepad2.right_bumper)
-        {
-            toggleTrigger();
-        }
+
         if(gamepad1.left_trigger != 1.0 && gamepad1.right_trigger != 1.0)
         {
             collector.setPower(0.00);
@@ -231,31 +220,49 @@ public class TeleOpMode extends OpMode {
             //collectorVal = 1;
             collector.setPower(1.00);
         }
-        if(gamepad1.right_trigger == 1.0) {
+        if(gamepad1.right_trigger >= 0.1) {
             //collectorVal = -1;
             collector.setPower(-1.00);
         }
 
+        if(gamepad2.right_trigger >= 0.1)
+        {
+            shootHeight += 5;
+        }
+
+        if(gamepad2.left_trigger >= 0.1)
+        {
+            shootHeight -= 5;
+        }
+
         if(gamepad1.right_stick_button)
         {
-            robotPower1 = 4.0;
+            robotPower1 = 2.0;
         }
         if(gamepad1.left_stick_button)
         {
-            robotPower1 = 0.3;
+            robotPower1 = 0.5;
+        }
+        if(gamepad2.right_stick_button)
+        {
+            robotPower2 = 1.0;
+        }
+        if(gamepad2.left_stick_button)
+        {
+            robotPower2 = 0.5;
         }
 
 
-        if(gamepad1.x)
+        if(gamepad1.x || gamepad2.x)
         {
             shootHeight = HIGHSHOT;
         }
-        if(gamepad1.b)
+        if(gamepad1.b || gamepad2.b)
         {
             shootHeight = LOWSHOT;
         }
 
-        if(gamepad1.y)
+        if(gamepad1.y || gamepad2.y)
         {
             liftingUp = true;
             falling = false;
@@ -263,24 +270,24 @@ public class TeleOpMode extends OpMode {
 
         }
 
-        if(gamepad1.a)
+        if(gamepad1.a || gamepad2.a)
         {
             falling = true;
             liftingUp = false;
             //bottomHeight = lift.getCurrentPosition() + 100;
         }
 
-        if(gamepad1.dpad_up)
+        if(gamepad1.dpad_up || gamepad2.dpad_up)
         {
             elbowH = ELBOWUP;
         }
 
-        if(gamepad1.dpad_down)
+        if(gamepad1.dpad_down || gamepad2.dpad_down)
         {
             elbowH = ELBOWDOWN;
         }
 
-        if(gamepad1.dpad_left)
+        if(gamepad1.dpad_left || gamepad2.dpad_left)
         {
             if(handH == OPENPOS)
             {
@@ -297,7 +304,7 @@ public class TeleOpMode extends OpMode {
             }
         }
 
-        if(gamepad1.dpad_right)
+        if(gamepad1.dpad_right || gamepad2.dpad_right)
         {
             if(handH == OPENPOS)
             {
@@ -329,27 +336,6 @@ public class TeleOpMode extends OpMode {
         telemetry.addData("Robot Power", robotPower1);
 
         telemetry.update();
-    }
-
-    private void dropWobble() {
-        elbowH = 1300;
-        elbow.setPosition((elbowH - 100.0) / 2420.0);
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        handH = OPENPOS;
-        hand.setPosition((handH - 100.0) / 2420.0);
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        handH = CLOSEDPOS;
-        elbowH = 1500;
-        elbow.setPosition((elbowH - 100.0) / 2420.0);
-        hand.setPosition((handH - 100.0) / 2420.0);
     }
 
     /*
@@ -464,7 +450,7 @@ public class TeleOpMode extends OpMode {
             else if(shooterToggle == false)
             {
                 shooter.setVelocity(1500);
-                advancingM.setPower(-80);
+                advancingM.setPower(-0.80);
             }
 
             if(liftingUp)
