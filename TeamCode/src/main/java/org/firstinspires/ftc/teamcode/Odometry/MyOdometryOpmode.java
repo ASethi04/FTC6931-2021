@@ -37,6 +37,7 @@ import org.opencv.core.Point;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collector;
 
 import static org.firstinspires.ftc.teamcode.Odometry.RobotMovement.followCurve;
 import static org.firstinspires.ftc.teamcode.Odometry.RobotMovement.getFollowPointPath;
@@ -83,7 +84,8 @@ public class MyOdometryOpmode extends LinearOpMode {
     public int collectorVal = 0;
     public final int TRIGGERFORWARD =  1480;
     public final int TRIGGERBACK = 1140;
-    public final int HIGHSHOT = 1050;
+    public final int HIGHSHOT = 985;
+    public final int HIGHSHOT2 = 845;
     public final int LOWSHOT = 1800;
     public int shootHeight = HIGHSHOT;
     public final int HIGHPOS = -1210;
@@ -108,6 +110,7 @@ public class MyOdometryOpmode extends LinearOpMode {
     public Servo shooterHeights2;
     public Servo elbow;
     public Servo hand;
+    public Servo block;
     public int size = 0;
     public String label = "quad";
     public double robotPower1 = 4.0;
@@ -234,6 +237,8 @@ public class MyOdometryOpmode extends LinearOpMode {
             telemetry.update();
 
             hand.setPosition((CLOSEDPOS - 100.0) / 2420.0);
+            block.setPosition((1850-100.0)/ 2420.0);
+
             //Thread.sleep(50);
             elbow.setPosition((1300.0 - 100.0) / 2420.0);
             shooterHeights.setPosition((HIGHSHOT - 100.0) / 2420.0);
@@ -250,14 +255,14 @@ public class MyOdometryOpmode extends LinearOpMode {
             //sleep(1000);
 
             ArrayList<CurvePoint> allPoints3 = new ArrayList<>();
-            allPoints3.add(new CurvePoint(WobbleX1,WobbleY1,0.95,1.0,2, Math.toRadians(0), 0.5));
+            allPoints3.add(new CurvePoint(WobbleX1,WobbleY1+3,0.95,1.0,2, Math.toRadians(0), 0.5));
 
             followCurve(COUNTS_PER_INCH, telemetry, allPoints3, Math.toRadians(Math.toRadians(0)), 3.5, st);
 
 
             ArrayList<CurvePoint> allPoints4 = new ArrayList<>();
 
-            allPoints4.add(new CurvePoint(WobbleX1-25,WobbleY1-10,0.95,1.0,2, Math.toRadians(0), 0.5));
+            allPoints4.add(new CurvePoint(WobbleX1-25,WobbleY1-7,0.95,1.0,2, Math.toRadians(0), 0.5));
 
             followCurve(COUNTS_PER_INCH, telemetry, allPoints4, Math.toRadians(Math.toRadians(0)), 3.5, st);
 
@@ -265,15 +270,17 @@ public class MyOdometryOpmode extends LinearOpMode {
 
             ArrayList<CurvePoint> allPoints5 = new ArrayList<>();
 
-            allPoints5.add(new CurvePoint(WobbleX1-10,WobbleY1+12.5,0.95,1.0,2, Math.toRadians(0), 0.5));
+            allPoints5.add(new CurvePoint(WobbleX1-10,WobbleY1+15.5,0.85,1.0,2, Math.toRadians(0), 0.5));
 
             followCurve(COUNTS_PER_INCH, telemetry, allPoints5, Math.toRadians(Math.toRadians(0)), 3.5, st);
+
+            Thread.sleep(450);
 
 
 
             ArrayList<CurvePoint> allPoints6 = new ArrayList<>();
 
-            allPoints6.add(new CurvePoint(WobbleX1+35,WobbleY1+12.5,0.95,1.0,2, Math.toRadians(0), 0.5));
+            allPoints6.add(new CurvePoint(WobbleX1+35,WobbleY1+15.5,0.90,1.0,2, Math.toRadians(0), 0.5));
 
             followCurve(COUNTS_PER_INCH, telemetry, allPoints6, Math.toRadians(Math.toRadians(0)), 3.5, st);
 
@@ -281,8 +288,8 @@ public class MyOdometryOpmode extends LinearOpMode {
 
 
             ArrayList<CurvePoint> allPoints = new ArrayList<>();
-            allPoints.add(new CurvePoint(   -6,65,0.95,1.0,2, Math.toRadians(0), 0.5));
-            followCurve(COUNTS_PER_INCH, telemetry, allPoints, Math.toRadians(0), 2.5, st);
+            allPoints.add(new CurvePoint(   -8,67,0.80,1.0,2, Math.toRadians(0), 0.5));
+            followCurve(COUNTS_PER_INCH, telemetry, allPoints, Math.toRadians(0), 1.0, st);
 
 
 
@@ -317,29 +324,29 @@ public class MyOdometryOpmode extends LinearOpMode {
 
 
             ArrayList<CurvePoint> allPoints8 = new ArrayList<>();
-            allPoints8.add(new CurvePoint(   0, 5,0.95,1.0,2, 0, 0.5));
+            allPoints8.add(new CurvePoint(   0, 1,0.85,1.0,2, 0, 0.5));
             followCurve(COUNTS_PER_INCH, telemetry, allPoints8, 0f, 3.0, st);
 
             ArrayList<CurvePoint> allPoints9 = new ArrayList<>();
-            allPoints9.add(new CurvePoint(   18.7, 3,0.95,1.0,2, 0, 0.5));
+            allPoints9.add(new CurvePoint(   16.7, 1,0.85,1.0,2, 0, 0.5));
             followCurve(COUNTS_PER_INCH, telemetry, allPoints9, 0f, 3.0, st);
 
             ArrayList<CurvePoint> allPoints10 = new ArrayList<>();
-            allPoints10.add(new CurvePoint(   30, WobbleY1+4,0.95,1.0,2, 0, 0.5));
+            allPoints10.add(new CurvePoint(   30.5, WobbleY1-3,0.80,1.0,2, 0, 0.5));
             followCurve(COUNTS_PER_INCH, telemetry, allPoints10, 0f, 3.0, st);
 
 
             ArrayList<CurvePoint> allPoints11 = new ArrayList<>();
-            allPoints11.add(new CurvePoint(   30, WobbleY1-15,0.95,1.0,2, 0, 0.5));
+            allPoints11.add(new CurvePoint(   30, WobbleY1-18,0.85,1.0,2, 0, 0.5));
             followCurve(COUNTS_PER_INCH, telemetry, allPoints11, 0f, 3.0, st);
 
             ArrayList<CurvePoint> allPoints12 = new ArrayList<>();
-            allPoints12.add(new CurvePoint(   10, WobbleY1-15,0.95,1.0,2, 0, 0.5));
-            followCurve(COUNTS_PER_INCH, telemetry, allPoints11, 0f, 2.5, st);
+            allPoints12.add(new CurvePoint(   0, WobbleY1-25,0.80,1.0,2, 0, 0.5));
+            followCurve(COUNTS_PER_INCH, telemetry, allPoints12, 0f, 2.5, st);
 
 
             ArrayList<CurvePoint> allPoints7 = new ArrayList<>();
-            allPoints7.add(new CurvePoint(   -10, 88,0.95,1.0,2, 0, 0.5));
+            allPoints7.add(new CurvePoint(   -10, 88,0.85,1.0,2, 0, 0.5));
             followCurve(COUNTS_PER_INCH, telemetry, allPoints7, 0f, 2.5, st);
 
 
@@ -348,7 +355,7 @@ public class MyOdometryOpmode extends LinearOpMode {
         else if(label.equalsIgnoreCase("quad"))
         {
             //Create and start GlobalCoordinatePosition thread to constantly update the global coordinate positions
-            globalPositionUpdate = new OdometryGlobalCoordinatePosition(verticalLeft, verticalRight, horizontal, COUNTS_PER_INCH, 20);
+            globalPositionUpdate = new OdometryGlobalCoordinatePosition(verticalLeft, verticalRight, horizontal, COUNTS_PER_INCH, 40);
             Thread positionThread = new Thread(globalPositionUpdate);
             positionThread.start();
 
@@ -360,6 +367,8 @@ public class MyOdometryOpmode extends LinearOpMode {
             telemetry.addData("Hardware map initialized", 1);
             telemetry.update();
 
+            block.setPosition((1850-100.0)/ 2420.0);
+
             hand.setPosition((CLOSEDPOS - 100.0) / 2420.0);
             //Thread.sleep(50);
             elbow.setPosition((1300.0 - 100.0) / 2420.0);
@@ -369,6 +378,10 @@ public class MyOdometryOpmode extends LinearOpMode {
             shooter.setVelocity(1500);
             advancingM.setPower(-1.00);
 
+            liftingUp = true;
+
+            falling = false;
+
             //rotate(85, 0.7);
 
             //sleep(20000);
@@ -377,56 +390,82 @@ public class MyOdometryOpmode extends LinearOpMode {
             //goToPosition(telemetry,15, 15, 0.75, 0, 1);
             //sleep(1000);
 
+
+
+            ArrayList<CurvePoint> allPoints09 = new ArrayList<>();
+            allPoints09.add(new CurvePoint(-3,3.65,1.0,1.0,2, Math.toRadians(0), 0.5));
+
+            followCurve(COUNTS_PER_INCH, telemetry, allPoints09, Math.toRadians(Math.toRadians(0)), 3.0, st);
+
             ArrayList<CurvePoint> allPoints0 = new ArrayList<>();
-            allPoints0.add(new CurvePoint(-25,30,0.95,1.0,2, Math.toRadians(0), 0.5));
+            allPoints0.add(new CurvePoint(17,0,0.98,1.0,2, Math.toRadians(0), 0.5));
 
             followCurve(COUNTS_PER_INCH, telemetry, allPoints0, Math.toRadians(Math.toRadians(0)), 3.0, st);
 
-            ArrayList<CurvePoint> allPoints00 = new ArrayList<>();
-            allPoints00.add(new CurvePoint(WobbleX1+23, WobbleY3,0.95,1.0,2, Math.toRadians(0), 0.5));
 
-            followCurve(COUNTS_PER_INCH, telemetry, allPoints00, Math.toRadians(Math.toRadians(0)), 3.0, st);
+            //ArrayList<CurvePoint> allPoints00 = new ArrayList<>();
+            //allPoints00.add(new CurvePoint(WobbleX1+23, WobbleY3,0.95,1.0,2, Math.toRadians(0), 0.5));
+
+            //followCurve(COUNTS_PER_INCH, telemetry, allPoints00, Math.toRadians(Math.toRadians(0)), 3.0, st);
 
 
-            ArrayList<CurvePoint> allPoints01 = new ArrayList<>();
-            allPoints01.add(new CurvePoint(WobbleX1-10, WobbleY3-15,0.95,1.0,2, Math.toRadians(0), 0.5));
+            //ArrayList<CurvePoint> allPoints01 = new ArrayList<>();
+            //allPoints01.add(new CurvePoint(WobbleX1-10, WobbleY3-15,0.95,1.0,2, Math.toRadians(0), 0.5));
 
-            followCurve(COUNTS_PER_INCH, telemetry, allPoints01, Math.toRadians(Math.toRadians(0)), 3.0, st);
+            //followCurve(COUNTS_PER_INCH, telemetry, allPoints01, Math.toRadians(Math.toRadians(0)), 3.0, st);
 
-            ArrayList<CurvePoint> allPoints02 = new ArrayList<>();
-            allPoints02.add(new CurvePoint(WobbleX1-10, WobbleY3+10,0.95,1.0,2, Math.toRadians(0), 0.5));
+           // ArrayList<CurvePoint> allPoints02 = new ArrayList<>();
+            //allPoints02.add(new CurvePoint(WobbleX1-10, WobbleY3+10,0.95,1.0,2, Math.toRadians(0), 0.5));
 
-            followCurve(COUNTS_PER_INCH, telemetry, allPoints02, Math.toRadians(Math.toRadians(0)), 3.0, st);
+ //           followCurve(COUNTS_PER_INCH, telemetry, allPoints02, Math.toRadians(Math.toRadians(0)), 3.0, st);
+
+
+
+            Thread.sleep(250);
+
 
             ArrayList<CurvePoint> allPoints3 = new ArrayList<>();
-            allPoints3.add(new CurvePoint(WobbleX1+36,WobbleY3+10,0.95,1.0,2, Math.toRadians(0), 0.5));
+            allPoints3.add(new CurvePoint(WobbleX1+48.5,WobbleY3+8,5.0,1.0,2, Math.toRadians(0), 0.5));
 
-            followCurve(COUNTS_PER_INCH, telemetry, allPoints3, Math.toRadians(Math.toRadians(0)), 3.0, st);
+            followCurve(COUNTS_PER_INCH, telemetry, allPoints3, Math.toRadians(Math.toRadians(0)), 3.6, st);
 
+            /*
             ArrayList<CurvePoint> allPoints03 = new ArrayList<>();
-            allPoints03.add(new CurvePoint(WobbleX1+30,WobbleY3+10,0.95,1.0,2, Math.toRadians(0), 0.5));
+            allPoints03.add(new CurvePoint(WobbleX1+40,WobbleY3+10,1.0,1.0,2, Math.toRadians(0), 0.5));
 
             followCurve(COUNTS_PER_INCH, telemetry, allPoints03, Math.toRadians(Math.toRadians(0)), 3.0, st);
 
 
+             */
+
+
+
             ArrayList<CurvePoint> allPoints = new ArrayList<>();
-            allPoints.add(new CurvePoint(   -11,65,0.95,1.0,2, Math.toRadians(0), 0.5));
-            followCurve(COUNTS_PER_INCH, telemetry, allPoints, Math.toRadians(0), 3.0, st);
+            allPoints.add(new CurvePoint(   -5,70,0.93,1.0,2, Math.toRadians(0), 0.5));
+            followCurve(COUNTS_PER_INCH, telemetry, allPoints, Math.toRadians(0), 2.3, st);
 
 
 
             //elbow.setPosition((ELBOWDOWN - 100.0) / 2420.0);
+            /*
             liftingUp=true;
             //lift.setPower(-0.4);
             falling = false;
             st.start();
 
-            Thread.sleep(1000);
+             */
+
+            Thread.sleep(200);
+
             toggleTriggerThrice();
             Thread.sleep(300);
 
             liftingUp = false;
             falling = true;
+
+            block.setPosition((279-100.0)/ 2420.0);
+
+
 
 
 
@@ -443,37 +482,170 @@ public class MyOdometryOpmode extends LinearOpMode {
 */
 
             ArrayList<CurvePoint> allPoints08 = new ArrayList<>();
-            allPoints08.add(new CurvePoint(   -28, 60,0.95,1.0,2, 0, 0.5));
+            allPoints08.add(new CurvePoint(   -28, 60,1.0,1.0,2, 0, 0.5));
             followCurve(COUNTS_PER_INCH, telemetry, allPoints08, 0f, 3.0, st);
 
+
+            ArrayList<CurvePoint> allPoints001 = new ArrayList<>();
+            allPoints001.add(new CurvePoint(   -12, 35,1.0,1.0,2, 0, 0.5));
+            followCurve(COUNTS_PER_INCH, telemetry, allPoints001, 0f, 3.0, st);
+
+            ArrayList<CurvePoint> allPoints005 = new ArrayList<>();
+            allPoints005.add(new CurvePoint(   3, 31,1.0,1.0,2, 0, 0.5));
+            followCurve(COUNTS_PER_INCH, telemetry, allPoints005, 0f, 3.0, st);
+
+            collector.setPower(-1.00);
+            liftingUp = false;
+            falling = true;
+            st.start();
+
+
+            ArrayList<CurvePoint> allPoints006 = new ArrayList<>();
+            allPoints006.add(new CurvePoint(   3, 41,0.78,1.0,2, 0, 0.5));
+            followCurve(COUNTS_PER_INCH, telemetry, allPoints006, 0f, 3.0, st);
+
+            ArrayList<CurvePoint> allPoints007 = new ArrayList<>();
+            allPoints007.add(new CurvePoint(   3, 36,0.78,1.0,2, 0, 0.5));
+            followCurve(COUNTS_PER_INCH, telemetry, allPoints007, 0f, 3.0, st);
+
+            ArrayList<CurvePoint> allPoints008 = new ArrayList<>();
+            allPoints008.add(new CurvePoint(   3, 46,0.78,1.0,2, 0, 0.5));
+            followCurve(COUNTS_PER_INCH, telemetry, allPoints008, 0f, 3.0, st);
+
+            ArrayList<CurvePoint> allPointsp1 = new ArrayList<>();
+            allPointsp1.add(new CurvePoint(   3, 38,0.85,1.0,2, 0, 0.5));
+            followCurve(COUNTS_PER_INCH, telemetry, allPointsp1, 0f, 3.0, st);
+
+            ArrayList<CurvePoint> allPointsp2 = new ArrayList<>();
+            allPointsp2.add(new CurvePoint(   3, 46,0.85,1.0,2, 0, 0.5));
+            followCurve(COUNTS_PER_INCH, telemetry, allPointsp2, 0f, 3.0, st);
+
+            shootHeight = HIGHSHOT2;
+
+            shooterHeights.setPosition((HIGHSHOT2-100.0)/ 2420.0);
+            shooterHeights2.setPosition((HIGHSHOT2-100.0)/ 2420.0);
+
+
+            Thread.sleep(800);
+
+            //elbow.setPosition((ELBOWDOWN - 100.0) / 2420.0);
+            liftingUp=true;
+            //lift.setPower(-0.4);
+            falling = false;
+
+            collector.setPower(0.20);
+
+
+            st.start();
+            Thread.sleep(800);
+            toggleTriggerTwice();
+            Thread.sleep(300);
+
+            liftingUp = false;
+            falling = true;
+
+            Thread.sleep(1000);
+
+            collector.setPower(-1.00);
+
+
+
+            ArrayList<CurvePoint> allPoints010 = new ArrayList<>();
+            allPoints010.add(new CurvePoint(   3, 51,0.92,1.0,2, 0, 0.5));
+            followCurve(COUNTS_PER_INCH, telemetry, allPoints010, 0f, 3.0, st);
+
+            ArrayList<CurvePoint> allPoints0009 = new ArrayList<>();
+            allPoints0009.add(new CurvePoint(   3, 46,0.92,1.0,2, 0, 0.5));
+            followCurve(COUNTS_PER_INCH, telemetry, allPoints0009, 0f, 3.0, st);
+
+            ArrayList<CurvePoint> allPoints0099 = new ArrayList<>();
+            allPoints0099.add(new CurvePoint(   3, 60,0.92,1.0,2, 0, 0.5));
+            followCurve(COUNTS_PER_INCH, telemetry, allPoints0099, 0f, 3.0, st);
+
+
+
+            block.setPosition((1850-100.0)/ 2420.0);
+
+
+
+            Thread.sleep(1000);
+
+            liftingUp=true;
+            //lift.setPower(-0.4);
+            falling = false;
+
+
+            shootHeight = HIGHSHOT2;
+
+            shooterHeights.setPosition((HIGHSHOT2-100.0)/ 2420.0);
+            shooterHeights2.setPosition((HIGHSHOT2-100.0)/ 2420.0);
+
+            st.start();
+
+            Thread.sleep(800);
+            toggleTriggerTwice();
+            Thread.sleep(300);
+
+            liftingUp = false;
+            falling = true;
+
+            ArrayList<CurvePoint> allPoints0008 = new ArrayList<>();
+            allPoints0008.add(new CurvePoint(   -30, 30,2.0,1.5,2, 0, 0.5));
+            followCurve(COUNTS_PER_INCH, telemetry, allPoints0008, 0f, 4.5, st);
+
+
+
             ArrayList<CurvePoint> allPoints8 = new ArrayList<>();
-            allPoints8.add(new CurvePoint(   0, 3,0.95,1.0,2, 0, 0.5));
-            followCurve(COUNTS_PER_INCH, telemetry, allPoints8, 0f, 3.0, st);
+            allPoints8.add(new CurvePoint(   -20, 0,2.0,1.5,2, 0, 0.5));
+            followCurve(COUNTS_PER_INCH, telemetry, allPoints8, 0f, 4.5, st);
+
+            collector.setPower(0.00);
 
             ArrayList<CurvePoint> allPoints9 = new ArrayList<>();
-            allPoints9.add(new CurvePoint(   10, 0,0.95,1.0,2, 0, 0.5));
+            allPoints9.add(new CurvePoint(   -3, 0,1.0,1.0,2, 0, 0.5));
             followCurve(COUNTS_PER_INCH, telemetry, allPoints9, 0f, 3.0, st);
-
-            ArrayList<CurvePoint> allPoints10 = new ArrayList<>();
-            allPoints10.add(new CurvePoint(   18.5, 0,0.95,1.0,2, 0, 0.5));
-            followCurve(COUNTS_PER_INCH, telemetry, allPoints10, 0f, 3.0, st);
 
             Thread.sleep(100);
 
+            //ArrayList<CurvePoint> allPoints10 = new ArrayList<>();
+            //allPoints10.add(new CurvePoint(   18.5, 0,0.95,1.0,2, 0, 0.5));
+            //followCurve(COUNTS_PER_INCH, telemetry, allPoints10, 0f, 3.0, st);
+
+            //Thread.sleep(100);
+
+
+            /*
+            ArrayList<CurvePoint> allPoints003 = new ArrayList<>();
+            allPoints003.add(new CurvePoint(   WobbleX3+1, 90,1.0,1.0,2, 0, 0.5));
+            followCurve(COUNTS_PER_INCH, telemetry, allPoints003, 0f, 3.0, st);
+
+
+
+            ArrayList<CurvePoint> allPoints011 = new ArrayList<>();
+            allPoints011.add(new CurvePoint(   WobbleX3+4,50,1.00,3.0,2, 0, 0.5));
+            followCurve(COUNTS_PER_INCH, telemetry, allPoints011, 0f, 4.0, st);
+
+
+             */
+
             ArrayList<CurvePoint> allPoints11 = new ArrayList<>();
-            allPoints11.add(new CurvePoint(   WobbleX3+6,WobbleY3,0.95,1.0,2, 0, 0.5));
+            allPoints11.add(new CurvePoint(   WobbleX3+13.5,WobbleY3,1.5,3.0,2, 0, 0.5));
             followCurve(COUNTS_PER_INCH, telemetry, allPoints11, 0f, 3.0, st);
 
 
             ArrayList<CurvePoint> allPoints7 = new ArrayList<>();
-            allPoints7.add(new CurvePoint(   -10, 88,0.95,1.0,2, 0, 0.5));
+            allPoints7.add(new CurvePoint(   -10, 94,3.5,1.0,2, 0, 0.5));
             followCurve(COUNTS_PER_INCH, telemetry, allPoints7, 0f, 3.0, st);
+
+
 
             //Thread.sleep(100);
         }
         else if(label.equalsIgnoreCase("single"))
         {
             //Create and start GlobalCoordinatePosition thread to constantly update the global coordinate positions
+            block.setPosition((1850-100.0)/ 2420.0);
+
             globalPositionUpdate = new OdometryGlobalCoordinatePosition(verticalLeft, verticalRight, horizontal, COUNTS_PER_INCH, 50);
             Thread positionThread = new Thread(globalPositionUpdate);
             positionThread.start();
@@ -495,6 +667,11 @@ public class MyOdometryOpmode extends LinearOpMode {
             shooter.setVelocity(1500);
             advancingM.setPower(-1.00);
 
+            liftingUp = true;
+
+            falling = false;
+
+
             //rotate(85, 0.7);
 
             //sleep(20000);
@@ -502,6 +679,7 @@ public class MyOdometryOpmode extends LinearOpMode {
             //turnWithGyro(left_front, left_back, right_front, right_back, imu, 90, 0.3);
             //goToPosition(telemetry,15, 15, 0.75, 0, 1);
             //sleep(1000);
+
 
             ArrayList<CurvePoint> allPoints0 = new ArrayList<>();
             allPoints0.add(new CurvePoint(-25,30,0.95,1.0,2, Math.toRadians(0), 0.5));
@@ -606,7 +784,7 @@ public class MyOdometryOpmode extends LinearOpMode {
 */
 
             ArrayList<CurvePoint> allPoints009 = new ArrayList<>();
-            allPoints009.add(new CurvePoint(   -8,65,0.80,1.0,2, Math.toRadians(0), 0.5));
+            allPoints009.add(new CurvePoint(   -8,67,0.85,1.0,2, Math.toRadians(0), 0.5));
             followCurve(COUNTS_PER_INCH, telemetry, allPoints009, Math.toRadians(0), 1.5, st);
 
             //elbow.setPosition((ELBOWDOWN - 100.0) / 2420.0);
@@ -617,7 +795,7 @@ public class MyOdometryOpmode extends LinearOpMode {
 
             Thread.sleep(1000);
 
-            toggleTriggerThrice();
+            toggleTrigger();
             Thread.sleep(300);
 
             ArrayList<CurvePoint> allPoints7 = new ArrayList<>();
@@ -688,6 +866,35 @@ public class MyOdometryOpmode extends LinearOpMode {
 
         //Stop the thread
         globalPositionUpdate.stop();
+
+    }
+
+    private void toggleTriggerTwice() {
+        triggered = true;
+        trigger.setPosition((TRIGGERFORWARD-100.0)/ 2420.0);
+        try {
+            Thread.sleep(300);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        triggered = false;
+        trigger.setPosition((TRIGGERBACK-100.0)/ 2420.0);
+        try {
+            Thread.sleep(300);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        triggered = true;
+        trigger.setPosition((TRIGGERFORWARD-100.0)/ 2420.0);
+        try {
+            Thread.sleep(300);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        triggered = false;
+        trigger.setPosition((TRIGGERBACK-100.0)/ 2420.0);
 
     }
 
@@ -845,6 +1052,20 @@ public class MyOdometryOpmode extends LinearOpMode {
         //telemetry.update();
     }
 
+    public void toggleTrigger()
+    {
+        triggered = true;
+        trigger.setPosition((TRIGGERFORWARD - 100.0) / 2420.0);
+        try {
+            Thread.sleep(650);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        triggered = false;
+        trigger.setPosition((TRIGGERBACK - 100.0) / 2420.0);
+    }
+
     public void toggleTriggerThrice()
     {
         triggered = true;
@@ -930,6 +1151,7 @@ public class MyOdometryOpmode extends LinearOpMode {
 
         shooterHeights = (Servo) hardwareMap.servo.get("ShooterHeightS");
         shooterHeights2 = (Servo) hardwareMap.servo.get("ShooterHeightS2");
+        block = (Servo) hardwareMap.servo.get("BlockS");
 
 
         lift = (DcMotorEx) hardwareMap.dcMotor.get("LiftM");
@@ -940,9 +1162,13 @@ public class MyOdometryOpmode extends LinearOpMode {
         lift.setTargetPosition(0);
 
 
-        PIDFCoefficients pid = new PIDFCoefficients(1000.0, 0.96, 445, 1.0, MotorControlAlgorithm.PIDF);
+        PIDFCoefficients pid = new PIDFCoefficients(1000.0, 0.96, 445, 0.0, MotorControlAlgorithm.PIDF);
 
         shooter.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pid);
+
+        PIDFCoefficients pid2 = new PIDFCoefficients(10.0, 0, 0, 0.0, MotorControlAlgorithm.PIDF);
+
+        lift.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pid2);
 
         trigger = hardwareMap.servo.get("TriggerS");
         elbow = hardwareMap.servo.get("WobbleElbowS");
@@ -1115,12 +1341,12 @@ public class MyOdometryOpmode extends LinearOpMode {
             if(liftingUp)
             {
                 lift.setTargetPosition(HIGHPOS);
-                lift.setVelocity(2000);
+                lift.setVelocity(5000);
             }
             if(falling)
             {
                 lift.setTargetPosition(0);
-                lift.setVelocity(2000);
+                lift.setVelocity(5000);
             }
 
 

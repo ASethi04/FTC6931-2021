@@ -12,12 +12,14 @@ import com.qualcomm.robotcore.hardware.MotorControlAlgorithm;
 import com.qualcomm.robotcore.hardware.PIDCoefficients;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigurationType;
 
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
+import org.firstinspires.ftc.teamcode.motors.REVHDHEXHUB_1291;
 
 import java.util.List;
 
@@ -29,38 +31,49 @@ public class TeleOpMode extends OpMode {
     public DcMotor fr;
     public DcMotor collector;
     public DcMotorEx shooter;
-    public DcMotorEx lift;
-    public DcMotor advancingM;
+
+    public DcMotor transferM;
     public boolean shooterToggle = false;
     public boolean triggered = false;
     //public int topHeight = 0;
     //public int bottomHeight = 1300;
-    public boolean liftingUp = false;
     public boolean falling = false;
     public int MINPOSITION = 100;
     public int MAXPOSITION = 2520;
     public int collectorVal = 0;
-    public final int TRIGGERFORWARD =  1460;
-    public final int TRIGGERBACK = 1140;
-    public final int HIGHSHOT = 1120;
-    public final int LOWSHOT = 1650;
-    public final int HIGHPOS = -1155;
+    public final int TRIGGERFORWARD =  950;
+    public final int TRIGGERBACK = 650;
+    public final int HIGHSHOT = 1560;
+    public final int LOWSHOT = 1800;
+    public final int HIGHPOS = -1250;
     public int shootHeight = HIGHSHOT;
-    public final int ELBOWUP = 900;
-    public final int ELBOWDOWN = 2050;
+    public final int ELBOWUP = 1600;
+    public final int ELBOWDOWN = 400;
     boolean firstTime = true;
-    public int elbowH = 1300;
-    public int CLOSEDPOS = 550;
-    public int OPENPOS = 1575;
+    public int elbowH = ELBOWUP;
+    public int CLOSEDPOS = 2350;
+    public int OPENPOS = 1570;
     public int handH = CLOSEDPOS;
     public Servo trigger;
     public Servo shooterHeights;
     public Servo shooterHeights2;
     public Servo elbow;
     public Servo hand;
+    public Servo block;
     public double robotPower1 = 2.0;
     public double robotPower2 = 0.5;
+    public boolean odometry = false;
     public StickyButton boostPower;
+    DcMotor verticalLeft, verticalRight, horizontal;
+
+    OdometryGlobalCoordinatePosition globalPositionUpdate = null;
+    String rfName = "FRWheelandLeftOdometry", rbName = "BRWheelandCenterOdometry", lfName = "FLWheelM", lbName = "BLWheelM", rightOdo="CollectorMandRightOdometry";
+    String vlEncoderName = rfName, vrEncoderName = rightOdo, hEncoderName = rbName;
+
+    private static final MotorConfigurationType MOTOR_CONFIG =
+            MotorConfigurationType.getMotorType(REVHDHEXHUB_1291.class);
+    final double COUNTS_PER_INCH = MOTOR_CONFIG.getTicksPerRev();
+
 
 
     /*
@@ -93,24 +106,25 @@ public class TeleOpMode extends OpMode {
 
     @Override
     public void init() {
+        verticalLeft = hardwareMap.dcMotor.get(vlEncoderName);
+        verticalRight = hardwareMap.dcMotor.get(vrEncoderName);
+        horizontal = hardwareMap.dcMotor.get(hEncoderName);
         fl = (DcMotor) hardwareMap.dcMotor.get("FLWheelM");
         fr = (DcMotor) hardwareMap.dcMotor.get("FRWheelandLeftOdometry");
-        fr.setDirection(DcMotor.Direction.REVERSE);
+        //fr.setDirection(DcMotor.Direction.REVERSE);
         bl = (DcMotor) hardwareMap.dcMotor.get("BLWheelM");
         br = (DcMotor) hardwareMap.dcMotor.get("BRWheelandCenterOdometry");
         //br.setDirection(DcMotorSimple.Direction.REVERSE);
         collector = (DcMotor) hardwareMap.dcMotor.get("CollectorMandRightOdometry");
         shooter = (DcMotorEx) hardwareMap.dcMotor.get("ShooterMandE");
-        advancingM = (DcMotorEx) hardwareMap.dcMotor.get("AdvancingM");
+        transferM = (DcMotorEx) hardwareMap.dcMotor.get("TransferM");
         shooterHeights = (Servo) hardwareMap.servo.get("ShooterHeightS");
         shooterHeights2 = (Servo) hardwareMap.servo.get("ShooterHeightS2");
         shooterHeights.setPosition((shootHeight - 100.0) / 2420.0);
         shooterHeights2.setPosition((shootHeight - 100.0) / 2420.0);
-        lift = (DcMotorEx) hardwareMap.dcMotor.get("LiftM");
-        lift.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        lift.setVelocity(0);
-        lift.setTargetPosition(0);
-        lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+
+
         shooter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         shooter.setDirection(DcMotor.Direction.REVERSE);
 
@@ -127,7 +141,8 @@ public class TeleOpMode extends OpMode {
         trigger = hardwareMap.servo.get("TriggerS");
         elbow = hardwareMap.servo.get("WobbleElbowS");
         hand = hardwareMap.servo.get("WobbleHandS");
-        br.setDirection(DcMotor.Direction.REVERSE);
+        block = hardwareMap.servo.get("BlockS");
+        //br.setDirection(DcMotor.Direction.REVERSE);
         trigger.setPosition((TRIGGERBACK-100.0)/ 2420.0);
         // The TFObjectDetector uses the camera frames from the VuforiaLocalizer, so we create that
         // first.
@@ -155,6 +170,9 @@ public class TeleOpMode extends OpMode {
                 telemetry.update();
             }
         }
+
+
+
     }
 
     @Override
@@ -181,7 +199,15 @@ public class TeleOpMode extends OpMode {
                 }
             }
 
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
             firstTime = false;
+
+
         }
 
 
@@ -227,12 +253,12 @@ public class TeleOpMode extends OpMode {
 
         if(gamepad2.right_trigger >= 0.1)
         {
-            shootHeight += 5;
+            shootHeight += 1;
         }
 
         if(gamepad2.left_trigger >= 0.1)
         {
-            shootHeight -= 5;
+            shootHeight -= 1;
         }
 
         if(gamepad1.right_stick_button)
@@ -245,7 +271,7 @@ public class TeleOpMode extends OpMode {
         }
         if(gamepad2.right_stick_button)
         {
-            robotPower2 = 1.0;
+            robotPower2 = 2.0;
         }
         if(gamepad2.left_stick_button)
         {
@@ -264,17 +290,35 @@ public class TeleOpMode extends OpMode {
 
         if(gamepad1.y || gamepad2.y)
         {
-            liftingUp = true;
-            falling = false;
+            odometry = true;
                 //topHeight = lift.getCurrentPosition() - 100;
 
         }
 
         if(gamepad1.a || gamepad2.a)
         {
-            falling = true;
-            liftingUp = false;
+            transferM.setPower(2.0);
+            collector.setPower(1.00);
+
             //bottomHeight = lift.getCurrentPosition() + 100;
+        }
+
+        if(gamepad1.y || gamepad2.y)
+        {
+            odometry = true;
+            globalPositionUpdate.run();
+        }
+
+        if(gamepad1.right_stick_x > 0.3 || gamepad1.right_stick_x < -0.3)
+        {
+            odometry = false;
+            globalPositionUpdate.stop();
+
+        }
+
+        if(!(gamepad1.a || gamepad2.a))
+        {
+            transferM.setPower(-2.0);
         }
 
         if(gamepad1.dpad_up || gamepad2.dpad_up)
@@ -321,38 +365,11 @@ public class TeleOpMode extends OpMode {
             }
         }
 
-        telemetry.addData("Lifting up", liftingUp);
         //telemetry.addData("Top Height", topHeight);
         //telemetry.addData("Bottom Height", bottomHeight);
-        telemetry.addData("Falling down", falling);
-        telemetry.addData("Shooter toggle", shooterToggle);
-        telemetry.addData("Hand H", handH);
-        telemetry.addData("Trigger position", trigger.getPosition());
-        telemetry.addData("Trigger bool", triggered);
-        telemetry.addData("Shooter height", shooterHeights.getPosition());
-        telemetry.addData("Shooter velocity in ticks per seconds", shooter.getVelocity());
-        telemetry.addData("PID Coef", shooter.getPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER));
-        telemetry.addData("PID Coef - P", shooter.getPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER).p);
-        telemetry.addData("Robot Power", robotPower1);
 
-        telemetry.update();
     }
 
-    /*
-
-    private void fall() {
-        lift.setPower(0.5);
-        lift.setTargetPosition(1300);
-        lift.setPower(0.05);
-    }
-
-    private void lift() {
-        lift.setPower(0.5);
-        lift.setTargetPosition(0);
-        lift.setPower(0.05);
-    }
-
-    */
 
     public void toggleShooter()
     {
@@ -445,30 +462,19 @@ public class TeleOpMode extends OpMode {
             if(shooterToggle == true)
             {
                 shooter.setVelocity(1500);
-                advancingM.setPower(-0.80);
             }
             else if(shooterToggle == false)
             {
                 shooter.setVelocity(1500);
-                advancingM.setPower(-0.80);
             }
 
-            if(liftingUp)
-            {
-                lift.setTargetPosition(HIGHPOS);
-                lift.setVelocity(2000);
-            }
-            if(falling)
-            {
-                lift.setTargetPosition(0);
-                lift.setVelocity(2000);
-            }
+
 
             elbow.setPosition((elbowH -100.0) / 2420.0);
             hand.setPosition((handH -100.0) / 2420.0);
             shooterHeights.setPosition((shootHeight-100.0)/ 2420.0);
             shooterHeights2.setPosition((shootHeight-100.0)/ 2420.0);
-
+            block.setPosition((1850-100.0)/ 2420.0);
 
         }
     }
@@ -506,57 +512,158 @@ public class TeleOpMode extends OpMode {
 
         public void run()
         {
-            if(gamepad1.left_stick_x != 0.0 || gamepad1.right_stick_x != 0.0 || gamepad1.left_stick_y != 0.0 || gamepad1.right_stick_y != 0.0)
-            {
-                try {
-                    double r = Math.hypot(gamepad1.left_stick_x, -gamepad1.left_stick_y);
-                    double robotAngle = Math.atan2(-gamepad1.left_stick_y, gamepad1.left_stick_x) - Math.PI / 4;
-                    double rightX = gamepad1.right_stick_x;
-                    final double v1 = r * Math.cos(robotAngle) + rightX;
-                    final double v2 = r * Math.sin(robotAngle) - rightX;
-                    final double v3 = r * Math.sin(robotAngle) + rightX;
-                    final double v4 = r * Math.cos(robotAngle) - rightX;
 
-                    fl.setPower(robotPower1*v1);
-                    fr.setPower(robotPower1*v2);
-                    bl.setPower(robotPower1*v3);
-                    br.setPower(-robotPower1*v4);
-                }
-                catch (Exception e)
+            if(odometry == false)
+            {
+                if(gamepad1.left_stick_x != 0.0 || gamepad1.right_stick_x != 0.0 || gamepad1.left_stick_y != 0.0 || gamepad1.right_stick_y != 0.0)
                 {
-                    telemetry.addData("Exception", e);
-                    telemetry.update();
+                    try {
+                        double r = Math.hypot(gamepad1.left_stick_x, -gamepad1.left_stick_y);
+                        double robotAngle = Math.atan2(-gamepad1.left_stick_y, gamepad1.left_stick_x) - Math.PI / 4;
+                        double rightX = gamepad1.right_stick_x;
+                        final double v1 = r * Math.cos(robotAngle) + rightX;
+                        final double v2 = r * Math.sin(robotAngle) - rightX;
+                        final double v3 = r * Math.sin(robotAngle) + rightX;
+                        final double v4 = r * Math.cos(robotAngle) - rightX;
+
+                        fl.setPower(robotPower1*v1);
+                        fr.setPower(robotPower1*v2);
+                        bl.setPower(robotPower1*v3);
+                        br.setPower(robotPower1*v4);
+                    }
+                    catch (Exception e)
+                    {
+                        telemetry.addData("Exception", e);
+                        telemetry.update();
+                    }
                 }
+
+                else if (gamepad2.left_stick_x != 0.0 || gamepad2.right_stick_x != 0.0 || gamepad2.left_stick_y != 0.0 || gamepad2.right_stick_y != 0.0)
+                {
+                    try {
+                        double r = Math.hypot(gamepad2.left_stick_x, -gamepad2.left_stick_y);
+                        double robotAngle = Math.atan2(-gamepad2.left_stick_y, gamepad2.left_stick_x) - Math.PI / 4;
+                        double rightX = gamepad2.right_stick_x;
+                        final double v1 = r * Math.cos(robotAngle) + rightX;
+                        final double v2 = r * Math.sin(robotAngle) - rightX;
+                        final double v3 = r * Math.sin(robotAngle) + rightX;
+                        final double v4 = r * Math.cos(robotAngle) - rightX;
+
+                        fl.setPower(robotPower2*v1);
+                        fr.setPower(robotPower2*v2);
+                        bl.setPower(robotPower2*v3);
+                        br.setPower(robotPower2*v4);
+                    }
+                    catch (Exception e)
+                    {
+                        telemetry.addData("Exception", e);
+                        telemetry.update();
+                    }
+                }
+                else
+                {
+                    fl.setPower(0);
+                    fr.setPower(0);
+                    bl.setPower(0);
+                    br.setPower(0);
+                }
+
+                /*
+                telemetry.addData("Falling down", falling);
+                telemetry.addData("Shooter toggle", shooterToggle);
+                telemetry.addData("Hand H", handH);
+                telemetry.addData("Trigger position", trigger.getPosition());
+                telemetry.addData("Trigger bool", triggered);
+                telemetry.addData("Shooter height", shooterHeights.getPosition());
+                telemetry.addData("Shooter velocity in ticks per seconds", shooter.getVelocity());
+                telemetry.addData("Robot Power", robotPower1);
+
+                telemetry.update();
+
+                 */
             }
 
-            else if (gamepad2.left_stick_x != 0.0 || gamepad2.right_stick_x != 0.0 || gamepad2.left_stick_y != 0.0 || gamepad2.right_stick_y != 0.0)
+            if(odometry == true)
             {
-                try {
-                    double r = Math.hypot(gamepad2.left_stick_x, -gamepad2.left_stick_y);
-                    double robotAngle = Math.atan2(-gamepad2.left_stick_y, gamepad2.left_stick_x) - Math.PI / 4;
-                    double rightX = gamepad2.right_stick_x;
-                    final double v1 = r * Math.cos(robotAngle) + rightX;
-                    final double v2 = r * Math.sin(robotAngle) - rightX;
-                    final double v3 = r * Math.sin(robotAngle) + rightX;
-                    final double v4 = r * Math.cos(robotAngle) - rightX;
-
-                    fl.setPower(robotPower2*v1);
-                    fr.setPower(robotPower2*v2);
-                    bl.setPower(robotPower2*v3);
-                    br.setPower(-robotPower2*v4);
-                }
-                catch (Exception e)
+                if(globalPositionUpdate == null)
                 {
-                    telemetry.addData("Exception", e);
-                    telemetry.update();
+                    globalPositionUpdate = new OdometryGlobalCoordinatePosition(verticalLeft, verticalRight, horizontal, COUNTS_PER_INCH, 20);
+                    Thread positionThread = new Thread(globalPositionUpdate);
+                    positionThread.start();
                 }
-            }
-            else
-            {
-                fl.setPower(0);
-                fr.setPower(0);
-                bl.setPower(0);
-                br.setPower(0);
+
+                double desiredAngle = Math.atan2(60, -globalPositionUpdate.returnXCoordinate());
+
+                /*
+                telemetry.addData("Falling down", falling);
+                telemetry.addData("Shooter toggle", shooterToggle);
+                telemetry.addData("Hand H", handH);
+                telemetry.addData("Trigger position", trigger.getPosition());
+                telemetry.addData("Trigger bool", triggered);
+                telemetry.addData("Shooter height", shooterHeights.getPosition());
+                telemetry.addData("Shooter velocity in ticks per seconds", shooter.getVelocity());
+                telemetry.addData("Robot Power", robotPower1);
+
+
+                 */
+                telemetry.addData("X Position", globalPositionUpdate.returnXCoordinate() / COUNTS_PER_INCH);
+                telemetry.addData("Y Position", globalPositionUpdate.returnYCoordinate() / COUNTS_PER_INCH);
+                telemetry.addData("CUrrent angle", globalPositionUpdate.returnOrientation());
+                telemetry.addData("Desired angle (degrees)", desiredAngle * (180/Math.PI));
+                telemetry.update();
+
+                if(gamepad1.left_stick_x != 0.0 || gamepad1.right_stick_x != 0.0 || gamepad1.left_stick_y != 0.0 || gamepad1.right_stick_y != 0.0)
+                {
+                    try {
+                        double r = Math.hypot(gamepad1.left_stick_x, -gamepad1.left_stick_y);
+                        double robotAngle = Math.atan2(-gamepad1.left_stick_y, gamepad1.left_stick_x) - Math.PI / 4;
+                        double rightX = gamepad1.right_stick_x;
+                        final double v1 = r * Math.cos(robotAngle) + rightX;
+                        final double v2 = r * Math.sin(robotAngle) - rightX;
+                        final double v3 = r * Math.sin(robotAngle) + rightX;
+                        final double v4 = r * Math.cos(robotAngle) - rightX;
+
+                        fl.setPower(robotPower1*v1);
+                        fr.setPower(robotPower1*v2);
+                        bl.setPower(robotPower1*v3);
+                        br.setPower(robotPower1*v4);
+                    }
+                    catch (Exception e)
+                    {
+                        telemetry.addData("Exception", e);
+                        telemetry.update();
+                    }
+                }
+
+                else if (gamepad2.left_stick_x != 0.0 || gamepad2.right_stick_x != 0.0 || gamepad2.left_stick_y != 0.0 || gamepad2.right_stick_y != 0.0)
+                {
+                    try {
+                        double r = Math.hypot(gamepad2.left_stick_x, -gamepad2.left_stick_y);
+                        double robotAngle = Math.atan2(-gamepad2.left_stick_y, gamepad2.left_stick_x) - Math.PI / 4;
+                        double rightX = gamepad2.right_stick_x;
+                        final double v1 = r * Math.cos(robotAngle) + rightX;
+                        final double v2 = r * Math.sin(robotAngle) - rightX;
+                        final double v3 = r * Math.sin(robotAngle) + rightX;
+                        final double v4 = r * Math.cos(robotAngle) - rightX;
+
+                        fl.setPower(robotPower2*v1);
+                        fr.setPower(robotPower2*v2);
+                        bl.setPower(robotPower2*v3);
+                        br.setPower(robotPower2*v4);
+                    }
+                    catch (Exception e)
+                    {
+                        telemetry.addData("Exception", e);
+                        telemetry.update();
+                    }
+                }
+                else
+                {
+                    fl.setPower(0);
+                    fr.setPower(0);
+                    bl.setPower(0);
+                    br.setPower(0);
+                }
             }
 
         }
