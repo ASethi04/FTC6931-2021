@@ -111,10 +111,10 @@ public class TeleOpMode extends OpMode {
         horizontal = hardwareMap.dcMotor.get(hEncoderName);
         fl = (DcMotor) hardwareMap.dcMotor.get("FLWheelM");
         fr = (DcMotor) hardwareMap.dcMotor.get("FRWheelandLeftOdometry");
-        //fr.setDirection(DcMotor.Direction.REVERSE);
+        fr.setDirection(DcMotor.Direction.REVERSE);
         bl = (DcMotor) hardwareMap.dcMotor.get("BLWheelM");
         br = (DcMotor) hardwareMap.dcMotor.get("BRWheelandCenterOdometry");
-        //br.setDirection(DcMotorSimple.Direction.REVERSE);
+        bl.setDirection(DcMotorSimple.Direction.REVERSE);
         collector = (DcMotor) hardwareMap.dcMotor.get("CollectorMandRightOdometry");
         shooter = (DcMotorEx) hardwareMap.dcMotor.get("ShooterMandE");
         transferM = (DcMotorEx) hardwareMap.dcMotor.get("TransferM");
@@ -305,14 +305,14 @@ public class TeleOpMode extends OpMode {
 
         if(gamepad1.y || gamepad2.y)
         {
-            odometry = true;
-            globalPositionUpdate.run();
+            //odometry = true;
+            //globalPositionUpdate.run();
         }
 
         if(gamepad1.right_stick_x > 0.3 || gamepad1.right_stick_x < -0.3)
         {
             odometry = false;
-            globalPositionUpdate.stop();
+            //globalPositionUpdate.stop();
 
         }
 
@@ -583,6 +583,7 @@ public class TeleOpMode extends OpMode {
                  */
             }
 
+            /*
             if(odometry == true)
             {
                 if(globalPositionUpdate == null)
@@ -594,7 +595,7 @@ public class TeleOpMode extends OpMode {
 
                 double desiredAngle = Math.atan2(60, -globalPositionUpdate.returnXCoordinate());
 
-                /*
+
                 telemetry.addData("Falling down", falling);
                 telemetry.addData("Shooter toggle", shooterToggle);
                 telemetry.addData("Hand H", handH);
@@ -605,7 +606,7 @@ public class TeleOpMode extends OpMode {
                 telemetry.addData("Robot Power", robotPower1);
 
 
-                 */
+
                 telemetry.addData("X Position", globalPositionUpdate.returnXCoordinate() / COUNTS_PER_INCH);
                 telemetry.addData("Y Position", globalPositionUpdate.returnYCoordinate() / COUNTS_PER_INCH);
                 telemetry.addData("CUrrent angle", globalPositionUpdate.returnOrientation());
@@ -665,6 +666,9 @@ public class TeleOpMode extends OpMode {
                     br.setPower(0);
                 }
             }
+
+             */
+
 
         }
 
